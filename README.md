@@ -16,7 +16,7 @@ This command will generate three files: your-video.aac, your-video.srt, your-vid
 
 ## Options 2 => OpenAI Whisper & Google Gemini
 
-### run command like below: add both English subtitle and Chinese to your video
+### run command like below: add both English subtitle and Chinese to your video (update the api-key in the .env file first)
 
 `$ python autosubtitle.py your-video.mp4 --model large --task transcribe --language en --gemini_model gemini-pro --language_to zh`
 
