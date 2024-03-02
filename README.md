@@ -18,7 +18,7 @@ This command will generate three files: your-video.aac, your-video.srt, your-vid
 
 ### run command like below: add both English subtitle and Chinese to your video
 
-`python autosubtitle.py your-video.mp4 --model large --task transcribe --language en --gemini_model gemini-pro --language_to zh`
+`$ python autosubtitle.py your-video.mp4 --model large --task transcribe --language en --gemini_model gemini-pro --language_to zh`
 
 This command will generate four files: your-video.aac, your-video.srt, your-video_t.srt, your-video_out.mp4
 
@@ -32,6 +32,8 @@ The key to enable Google Gemini here is to use the --gemini_model parameter, and
    1. pip install openai-whisper
    2. pip install -q -U google-generativeai
    3. pip install python-dotenv
+4. You can also use the pip install the requirements.txt instead of step 3:
+   1. `pip install -r requirements.txt`
 
 For more parameters, see the help:
 
