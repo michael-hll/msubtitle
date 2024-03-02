@@ -1,0 +1,6 @@
+*.mp4
+*.srt
+*.aac
+__pycache__
+.DS_Store
+out
