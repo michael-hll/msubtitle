@@ -19,10 +19,12 @@ def translateSrt(srtFilePath, language, outPath, model_name, verbose = False, er
           line = line.replace('\n', '')          
           if line.isnumeric():
             lineNo = int(line)
-          if not (line.isnumeric() or '-->' in line) and line:            
+          if not (line.isnumeric() or '-->' in line) and line:       
+            lineBackup = line     
             line = __askGemini(transCommand.format(language, line), model_name, verbose)
             if not line:
               errors.append(lineNo)
+              line = '[TRANSATION-FAIL]: ' + lineBackup
             if verbose:
               print(line)
           wf.write(line + '\n')
