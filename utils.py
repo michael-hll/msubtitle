@@ -63,10 +63,10 @@ def run_ffmpeg_command(cmd, verbose = False):
   # waiting the result and return
   process.communicate()  
   if process.returncode != 0:  
-      if verbose:
-        print('==> ffmpeg command runn failed!')
-      return False                           
+    if verbose:
+      print('==> ffmpeg command runn failed!')
+    return False                           
   else:
-      if verbose:
-        print('==> ffmpeg command run success!')
-      return True  
+    if verbose:
+      print('==> ffmpeg command run success!')
+    return True  
