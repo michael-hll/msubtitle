@@ -13,7 +13,7 @@ But the whisper's tranlsation is not good at this moment, so you can choose Goog
 `$ python autosubtitle.py your-video.mp4 --model large --task transcribe --language zh`
 
 ### to process all mp4 videos of a directory:
-`$ python autosubtitle.py --input_dir directory --model large --task transcribe --language zh`
+`$ python autosubtitle.py --input_dir your-directory --model large --task transcribe --language zh`
 
 This command will generate three files: your-video.aac, your-video.srt, your-video_out.mp4
 
