@@ -4,11 +4,13 @@ import whisper
 import argparse
 import warnings
 import shutil
-from utils import filename, str2bool, write_srt, run_ffmpeg_command, sizeof_fmt
+from utils import C, filename, str2bool, write_srt, run_ffmpeg_command, sizeof_fmt, format_seconds
 from csrt import translateSrt
 import uuid
 import glob
 from tqdm import tqdm
+import time
+from tabulate import tabulate
 
 temp_dir = os.path.join(os.getcwd(), "temp")
 
@@ -96,17 +98,20 @@ def main():
     temp_file_id = str(uuid.uuid1())
     temp_video_name = os.path.join(temp_dir, temp_file_id + '.mp4')
     processed_result[video] = {
-        "uuid": "",  # the uuid used to the following temp file names
-        "temp": "",  # temp video name
-        "aac": "",  # temp aac audio file name
-        "srt": "",  # temp srt file name
-        "srt_t": "",  # temp srt translation file name
-        "size": "",  # temp video file size
+        C.UUID: "",  # the uuid used to the following temp file names
+        C.TEMP: "",  # temp video name
+        C.AAC: "",  # temp aac audio file name
+        C.SRT: "",  # temp srt file name
+        C.SRT_T: "",  # temp srt translation file name
+        C.SIZE: "",  # temp video file size
+        C.START: time.time(),  # start time
+        C.END: 0,  # end time
+        C.DURATION: "",  # running duration
     }
-    processed_result[video]['uuid'] = temp_file_id
-    processed_result[video]["temp"] = temp_video_name
+    processed_result[video][C.UUID] = temp_file_id
+    processed_result[video][C.TEMP] = temp_video_name
     shutil.copy(video, temp_video_name)
-    processed_result[video]['size'] = sizeof_fmt(
+    processed_result[video][C.SIZE] = sizeof_fmt(
         os.stat(temp_video_name).st_size)
 
     # get audio file (aac file)
@@ -123,72 +128,87 @@ def main():
     if gemini_model:
       # using google gemini to translate the output srt file
       print(
-          f"==> Translating subtitles for '{filename(video)}.mp4' {processed_result[video]['size']} This might take a while.")
-      srt_t_temp_file_name = processed_result[video]['uuid'] + '_t.srt'
+          f"==> Translating subtitles for '{filename(video)}.mp4' {processed_result[video][C.SIZE]} This might take a while.")
+      srt_t_temp_file_name = processed_result[video][C.UUID] + '_t.srt'
       srt_t_path = os.path.join(temp_dir, srt_t_temp_file_name)
       errors = []
-      translateSrt(processed_result[video]['srt'], language_to, srt_t_path,
+      translateSrt(processed_result[video][C.SRT], language_to, srt_t_path,
                    gemini_model, verbose, errors)
-      processed_result[video]['srt_t'] = srt_t_path
+      processed_result[video][C.SRT_T] = srt_t_path
       print('==> error item nubmers:', errors)
 
     # auto add subtitles to the original video
     # using ffmpeg command to achieve this
     if not srt_only:
-      temp_video_out_name = processed_result[video]['uuid'] + '.out.mp4'
+      temp_video_out_name = processed_result[video][C.UUID] + '.out.mp4'
       temp_video_out_path = os.path.join(temp_dir, temp_video_out_name)
-      processed_result[video]['out'] = temp_video_out_path
-      srt_t_path = processed_result[video]['srt_t']
+      processed_result[video][C.OUT] = temp_video_out_path
+      srt_t_path = processed_result[video][C.SRT_T]
 
       print(
-          f"==> Adding subtitles to {filename(video)}.mp4 {processed_result[video]['size']}")
+          f"==> Adding subtitles to {filename(video)}.mp4 {processed_result[video][C.SIZE]}")
 
       if not gemini_model:
         # only add one subtitle to the video, using the whisper
         run_ffmpeg_command(
-            f"ffmpeg -y -i {processed_result[video]['temp']} -i {processed_result[video]['srt']} -map 0:v -map 0:a -map 1 -c:v copy -c:a copy -c:s mov_text -metadata:s:s:0 language={language} {temp_video_out_path}",
+            f"ffmpeg -y -i {processed_result[video][C.TEMP]} -i {processed_result[video][C.SRT]} -map 0:v -map 0:a -map 1 -c:v copy -c:a copy -c:s mov_text -metadata:s:s:0 language={language} {temp_video_out_path}",
             verbose)
       else:
         # translate then add both subtitles, using google
         run_ffmpeg_command(
-            f"ffmpeg -y -i {processed_result[video]['temp']} -i {processed_result[video]['srt']} -i {srt_t_path} -map 0:v -map 0:a -map 1 -map 2 -c:v copy -c:a copy -c:s mov_text -metadata:s:s:0 language={language} -metadata:s:s:1 language={language_to} {temp_video_out_path}",
+            f"ffmpeg -y -i {processed_result[video][C.TEMP]} -i {processed_result[video][C.SRT]} -i {srt_t_path} -map 0:v -map 0:a -map 1 -map 2 -c:v copy -c:a copy -c:s mov_text -metadata:s:s:0 language={language} -metadata:s:s:1 language={language_to} {temp_video_out_path}",
             verbose)
 
     # copy temp files to the output folder
     final_output = os.path.join(
         output_dir, filename(video) + '.mp4')
     shutil.copy(temp_video_out_path, final_output)
-    if processed_result[video]['srt']:
-      shutil.copy(processed_result[video]['srt'], os.path.join(
+    if processed_result[video][C.SRT]:
+      shutil.copy(processed_result[video][C.SRT], os.path.join(
           output_dir, filename(video) + '.srt'))
-    if processed_result[video]['srt_t']:
-      shutil.copy(processed_result[video]['srt_t'], os.path.join(
+    if processed_result[video][C.SRT_T]:
+      shutil.copy(processed_result[video][C.SRT_T], os.path.join(
           output_dir, filename(video) + '_t.srt'))
     print(f"==> Saved subtitled video to {os.path.abspath(final_output)}")
+    processed_result[video][C.END] = time.time()
+    processed_result[video][C.DURATION] = format_seconds(
+        processed_result[video][C.END] - processed_result[video][C.START])
+
+  # output running summary
+  logs = []
+  print('\n============== SUMMARY ==============')
+  logs.append(["SEQ", "FILE", "SIZE", "DURATION"])
+  for i, video in enumerate(to_processed_files):
+    size = processed_result[video][C.SIZE][1:len(
+        processed_result[video][C.SIZE])-1]
+    size = size.split(':')[1].strip()
+    logs.append([str(i+1), video, size, processed_result[video][C.DURATION]])
+  print(tabulate(logs, headers="firstrow"))
+  print('-------------------------------------')
 
 
 def get_audio(video, processed_result, verbose):
 
-  temp_video_file = processed_result[video]["temp"]
-  temp_audio_file_out = processed_result[video]["uuid"] + ".aac"
+  temp_video_file = processed_result[video][C.TEMP]
+  temp_audio_file_out = processed_result[video][C.UUID] + ".aac"
   print(
-      f"==> Extracting audio from {filename(video)}.mp4 {processed_result[video]['size']}")
+      f"==> Extracting audio from {filename(video)}.mp4 {processed_result[video][C.SIZE]}")
   audio_output_path = os.path.join(temp_dir, temp_audio_file_out)
 
   run_ffmpeg_command("ffmpeg -y -i " + temp_video_file +
                      " -vn -acodec copy " + audio_output_path, verbose)
 
-  processed_result[video]["aac"] = audio_output_path
+  processed_result[video][C.AAC] = audio_output_path
 
 
 def get_subtitles(video, processed_result, transcribe: callable):
 
-  temp_aac_file = processed_result[video]['aac']
-  srt_temp_file = processed_result[video]['uuid'] + '.srt'
+  temp_aac_file = processed_result[video][C.AAC]
+  srt_temp_file = processed_result[video][C.UUID] + '.srt'
   srt_file_temp_path = os.path.join(temp_dir, srt_temp_file)
 
   print(
-      f"==> Generating subtitles for '{filename(video)}.mp4' {processed_result[video]['size']} This might take a while.")
+      f"==> Generating subtitles for '{filename(video)}.mp4' {processed_result[video][C.SIZE]} This might take a while.")
 
   warnings.filterwarnings("ignore")
   result = transcribe(temp_aac_file)
@@ -197,7 +217,7 @@ def get_subtitles(video, processed_result, transcribe: callable):
   with open(srt_file_temp_path, "w", encoding="utf-8") as srt:
     write_srt(result["segments"], file=srt)
 
-  processed_result[video]['srt'] = srt_file_temp_path
+  processed_result[video][C.SRT] = srt_file_temp_path
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@ import os
 import sys
 from typing import Iterator, TextIO
 import subprocess
+from enum import Enum
 
 
 def str2bool(string):
@@ -80,3 +81,33 @@ def sizeof_fmt(num, suffix="B"):
       return f"[size: {num:3.1f}{unit}{suffix}]"
     num /= 1024.0
   return f"[size of: {num:.1f}Y{suffix}]"
+
+
+def format_seconds(seconds):
+  minutes, seconds = divmod(seconds, 60)
+  hours, minutes = divmod(minutes, 60)
+  days, hours = divmod(hours, 24)
+
+  time_string = ""
+  if days > 0:
+    time_string += "{:d} days, ".format(int(days))
+  if hours > 0:
+    time_string += "{:d} hours, ".format(int(hours))
+  if minutes > 0:
+    time_string += "{:d} minutes, ".format(int(minutes))
+  time_string += "{:.2f} seconds".format(seconds)
+
+  return time_string
+
+
+class C(Enum):
+  UUID = 'uuid'
+  TEMP = 'temp'
+  AAC = 'aac'
+  SRT = 'srt'
+  SRT_T = 'srt_t'
+  SIZE = 'size'
+  START = 'start'
+  END = 'end'
+  DURATION = 'duration'
+  OUT = 'out'
