@@ -4,7 +4,7 @@ import whisper
 import argparse
 import warnings
 import shutil
-from utils import filename, str2bool, write_srt, run_ffmpeg_command
+from utils import filename, str2bool, write_srt, run_ffmpeg_command, sizeof_fmt
 from csrt import translateSrt
 import uuid
 import glob
@@ -101,10 +101,13 @@ def main():
         "aac": "",  # temp aac audio file name
         "srt": "",  # temp srt file name
         "srt_t": "",  # temp srt translation file name
+        "size": "",  # temp video file size
     }
     processed_result[video]['uuid'] = temp_file_id
     processed_result[video]["temp"] = temp_video_name
     shutil.copy(video, temp_video_name)
+    processed_result[video]['size'] = sizeof_fmt(
+        os.stat(temp_video_name).st_size)
 
     # get audio file (aac file)
     get_audio(video, processed_result, verbose)
@@ -120,7 +123,7 @@ def main():
     if gemini_model:
       # using google gemini to translate the output srt file
       print(
-          f"Translating subtitles for '{filename(video)}.mp4' This might take a while.")
+          f"==> Translating subtitles for '{filename(video)}.mp4' {processed_result[video]['size']} This might take a while.")
       srt_t_temp_file_name = processed_result[video]['uuid'] + '_t.srt'
       srt_t_path = os.path.join(temp_dir, srt_t_temp_file_name)
       errors = []
@@ -137,7 +140,8 @@ def main():
       processed_result[video]['out'] = temp_video_out_path
       srt_t_path = processed_result[video]['srt_t']
 
-      print(f"Adding subtitles to {filename(video)}...")
+      print(
+          f"==> Adding subtitles to {filename(video)}.mp4 {processed_result[video]['size']}")
 
       if not gemini_model:
         # only add one subtitle to the video, using the whisper
@@ -160,14 +164,15 @@ def main():
     if processed_result[video]['srt_t']:
       shutil.copy(processed_result[video]['srt_t'], os.path.join(
           output_dir, filename(video) + '_t.srt'))
-    print(f"Saved subtitled video to {os.path.abspath(final_output)}.")
+    print(f"==> Saved subtitled video to {os.path.abspath(final_output)}")
 
 
 def get_audio(video, processed_result, verbose):
 
   temp_video_file = processed_result[video]["temp"]
   temp_audio_file_out = processed_result[video]["uuid"] + ".aac"
-  print(f"Extracting audio from {filename(video)}...")
+  print(
+      f"==> Extracting audio from {filename(video)}.mp4 {processed_result[video]['size']}")
   audio_output_path = os.path.join(temp_dir, temp_audio_file_out)
 
   run_ffmpeg_command("ffmpeg -y -i " + temp_video_file +
@@ -183,7 +188,7 @@ def get_subtitles(video, processed_result, transcribe: callable):
   srt_file_temp_path = os.path.join(temp_dir, srt_temp_file)
 
   print(
-      f"Generating subtitles for '{filename(video)}.mp4' This might take a while.")
+      f"==> Generating subtitles for '{filename(video)}.mp4' {processed_result[video]['size']} This might take a while.")
 
   warnings.filterwarnings("ignore")
   result = transcribe(temp_aac_file)
