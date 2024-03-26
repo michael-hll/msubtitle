@@ -2,7 +2,6 @@ import os
 import sys
 from typing import Iterator, TextIO
 import subprocess
-import glob
 
 
 def str2bool(string):
