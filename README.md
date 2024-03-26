@@ -13,6 +13,7 @@ But the whisper's tranlsation is not good at this moment, so you can choose Goog
 `$ python autosubtitle.py your-video.mp4 --model large --task transcribe --language zh`
 
 ### to process all mp4 videos of a directory:
+
 `$ python autosubtitle.py --input_dir your-directory --model large --task transcribe --language zh`
 
 This command will generate three files: your-video.aac, your-video.srt, your-video_out.mp4
@@ -35,6 +36,7 @@ The key to enable Google Gemini here is to use the --gemini_model parameter, and
    1. pip install openai-whisper
    2. pip install -q -U google-generativeai
    3. pip install python-dotenv
+   4. pip install tabulate
 4. You can also use the pip install the requirements.txt instead of step 3:
    1. `pip install -r requirements.txt`
 
