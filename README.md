@@ -12,11 +12,11 @@ But the whisper's tranlsation is not good at this moment, so you can choose Goog
 
 `$ python autosubtitle.py your-video.mp4 --model large --task transcribe --language zh`
 
+This command will generate three files: your-video.aac, your-video.srt, your-video.mp4
+
 ### to process all mp4 videos of a directory:
 
 `$ python autosubtitle.py --input_dir your-directory --model large --task transcribe --language zh`
-
-This command will generate three files: your-video.aac, your-video.srt, your-video_out.mp4
 
 ## Options 2 => OpenAI Whisper & Google Gemini
 
@@ -24,7 +24,7 @@ This command will generate three files: your-video.aac, your-video.srt, your-vid
 
 `$ python autosubtitle.py your-video.mp4 --model large --task transcribe --language en --gemini_model gemini-pro --language_to zh`
 
-This command will generate four files: your-video.aac, your-video.srt, your-video_t.srt, your-video_out.mp4
+This command will generate four files: your-video.aac, your-video.srt, your-video_t.srt, your-video.mp4
 
 The key to enable Google Gemini here is to use the --gemini_model parameter, and the program will translate the generated srt file of language (--language) to target language (--language_to)
 

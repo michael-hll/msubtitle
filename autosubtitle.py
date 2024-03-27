@@ -97,6 +97,8 @@ def main():
   if not output_dir:
     output_dir = os.path.join(os.getcwd(), 'out')
   os.makedirs(output_dir, exist_ok=True)
+  if verbose:
+    print(f'==> cleanning up files from temp folder: {temp_dir}')
   shutil.rmtree(temp_dir, ignore_errors=True, onerror=None)
   os.makedirs(temp_dir, exist_ok=True)
 
@@ -130,6 +132,8 @@ def main():
     }
     processed_result[video][C.UUID] = temp_file_id
     processed_result[video][C.TEMP] = temp_video_name
+    if verbose:
+      print(f'==> coping processed mp4 file [{video}] to [{temp_video_name}]')
     shutil.copy(video, temp_video_name)
     processed_result[video][C.SIZE] = sizeof_fmt(
         os.stat(temp_video_name).st_size)
@@ -182,14 +186,28 @@ def main():
     # copy temp files to the output folder
     final_output = os.path.join(
         output_dir, filename(video) + '.mp4')
+    if verbose:
+      print(
+          f'==> coping translated video file to output folder: {final_output}')
     shutil.copy(temp_video_out_path, final_output)
     if processed_result[video][C.SRT]:
+      if verbose:
+        print(
+            f'==> coping srt file to output folder: {filename(video)+".srt"}')
       shutil.copy(processed_result[video][C.SRT], os.path.join(
           output_dir, filename(video) + '.srt'))
     if processed_result[video][C.SRT_T]:
+      if verbose:
+        print(
+            f'==> coping translated srt file to output folder: {filename(video)+"_t.srt"}')
       shutil.copy(processed_result[video][C.SRT_T], os.path.join(
           output_dir, filename(video) + '_t.srt'))
-    print(f"==> Saved subtitled video to {os.path.abspath(final_output)}")
+    if processed_result[video][C.AAC]:
+      if verbose:
+        print(
+            f'==> coping audio file to output folder: {filename(video)+".aac"}')
+      shutil.copy(processed_result[video][C.AAC], os.path.join(
+          output_dir, filename(video) + '.aac'))
     processed_result[video][C.END] = time.time()
     processed_result[video][C.DURATION] = format_seconds(
         processed_result[video][C.END] - processed_result[video][C.START])
