@@ -97,8 +97,7 @@ def main():
   if not output_dir:
     output_dir = os.path.join(os.getcwd(), 'out')
   os.makedirs(output_dir, exist_ok=True)
-  if verbose:
-    print(f'==> cleanning up files from temp folder: {temp_dir}')
+  print(f'==> cleanning up files from temp folder: {temp_dir}')
   shutil.rmtree(temp_dir, ignore_errors=True, onerror=None)
   os.makedirs(temp_dir, exist_ok=True)
 
@@ -186,26 +185,25 @@ def main():
     # copy temp files to the output folder
     final_output = os.path.join(
         output_dir, filename(video) + '.mp4')
-    if verbose:
-      print(
-          f'==> coping translated video file to output folder: {final_output}')
+
+    print(
+        f'==> coping translated video file to output folder: {final_output}')
     shutil.copy(temp_video_out_path, final_output)
     if processed_result[video][C.SRT]:
-      if verbose:
-        print(
-            f'==> coping srt file to output folder: {filename(video)+".srt"}')
+
+      print(
+          f'==> coping srt file to output folder: {filename(video)+".srt"}')
       shutil.copy(processed_result[video][C.SRT], os.path.join(
           output_dir, filename(video) + '.srt'))
     if processed_result[video][C.SRT_T]:
-      if verbose:
-        print(
-            f'==> coping translated srt file to output folder: {filename(video)+"_t.srt"}')
+
+      print(
+          f'==> coping translated srt file to output folder: {filename(video)+"_t.srt"}')
       shutil.copy(processed_result[video][C.SRT_T], os.path.join(
           output_dir, filename(video) + '_t.srt'))
     if processed_result[video][C.AAC]:
-      if verbose:
-        print(
-            f'==> coping audio file to output folder: {filename(video)+".aac"}')
+      print(
+          f'==> coping audio file to output folder: {filename(video)+".aac"}')
       shutil.copy(processed_result[video][C.AAC], os.path.join(
           output_dir, filename(video) + '.aac'))
     processed_result[video][C.END] = time.time()
