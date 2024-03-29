@@ -111,3 +111,16 @@ class C(Enum):
   END = 'end'
   DURATION = 'duration'
   OUT = 'out'
+
+
+class ARGS:
+  VIDEO = 'video'
+  INPUT_DIR = 'input_dir'
+  MODEL = 'model'
+  OUTPUT_DIR = 'output_dir'
+  SRT_ONLY = 'srt_only'
+  VERBOSE = 'verbose'
+  TASK = 'task'
+  LANGUAGE = 'language'
+  GEMINI_MODEL = 'gemini_model'
+  LANGUAGE_TO = 'language_to'

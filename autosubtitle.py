@@ -4,7 +4,7 @@ import whisper
 import argparse
 import warnings
 import shutil
-from utils import C, filename, str2bool, write_srt, run_ffmpeg_command, sizeof_fmt, format_seconds
+from utils import ARGS, C, filename, str2bool, write_srt, run_ffmpeg_command, sizeof_fmt, format_seconds
 from csrt import translateSrt
 import uuid
 import glob
@@ -18,22 +18,22 @@ temp_dir = os.path.join(os.getcwd(), "temp")
 def main():
   parser = argparse.ArgumentParser(
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument("video", nargs="*", type=str,
+  parser.add_argument(ARGS.VIDEO, nargs="*", type=str,
                       default=None, help="paths to video files to transcribe")
-  parser.add_argument("--input_dir", "-i", type=str, nargs='*',
+  parser.add_argument(f"--{ARGS.INPUT_DIR}", "-i", type=str, nargs='*',
                       default=None, help="directory of mp4 files")
-  parser.add_argument("--model", default="small",
+  parser.add_argument(f"--{ARGS.MODEL}", default="small",
                       choices=whisper.available_models(), help="name of the Whisper model to use")
-  parser.add_argument("--output_dir", "-o", type=str,
+  parser.add_argument(f"--{ARGS.OUTPUT_DIR}", "-o", type=str,
                       default="", help="directory to save the outputs")
-  parser.add_argument("--srt_only", type=str2bool, default=False,
+  parser.add_argument(f"--{ARGS.SRT_ONLY}", type=str2bool, default=False,
                       help="only generate the .srt file and not create overlayed video")
-  parser.add_argument("--verbose", type=str2bool, default=False,
+  parser.add_argument(f"--{ARGS.VERBOSE}", type=str2bool, default=False,
                       help="whether to print out the progress and debug messages")
-  parser.add_argument("--task", type=str, default="transcribe",
+  parser.add_argument(f"--{ARGS.TASK}", type=str, default="transcribe",
                       choices=["transcribe", "translate"],
                       help="whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')")
-  parser.add_argument("--language", type=str, default="auto",
+  parser.add_argument(f"--{ARGS.LANGUAGE}", type=str, default="auto",
                       choices=["auto", "af", "am", "ar", "as", "az", "ba", "be", "bg", "bn", "bo",
                                "br", "bs", "ca", "cs", "cy", "da", "de", "el", "en", "es", "et", "eu",
                                "fa", "fi", "fo", "fr", "gl", "gu", "ha", "haw", "he", "hi", "hr", "ht",
@@ -44,9 +44,9 @@ def main():
                                "sv", "sw", "ta", "te", "tg", "th", "tk", "tl", "tr", "tt", "uk", "ur",
                                "uz", "vi", "yi", "yo", "zh"],
                       help="What is the origin language of the video? If unset, it is detected automatically.")
-  parser.add_argument("--gemini_model", default="",
+  parser.add_argument(f"--{ARGS.GEMINI_MODEL}", default="",
                       choices=["gemini-pro", "gemini"], help="name of the gemini model")
-  parser.add_argument("--language_to", type=str, default="zh",
+  parser.add_argument(f"--{ARGS.LANGUAGE_TO}", type=str, default="zh",
                       choices=["af", "am", "ar", "as", "az", "ba", "be",
                                "bg", "bn", "bo", "br", "bs", "ca", "cs", "cy", "da", "de", "el",
                                "en", "es", "et", "eu", "fa", "fi", "fo", "fr", "gl", "gu", "ha",
@@ -60,16 +60,16 @@ def main():
                       help="The language code to translate the subtitle to using gemini_model")
 
   args = parser.parse_args().__dict__
-  model_name: str = args.pop("model")
-  input_dir: str = args.pop("input_dir", None)
-  video: str = args.pop("video", None)
-  output_dir: str = args.pop("output_dir")
-  srt_only: bool = args.pop("srt_only")
-  language: str = args.pop("language")
-  language_to: str = args.pop("language_to")
+  model_name: str = args.pop(ARGS.MODEL)
+  input_dir: str = args.pop(ARGS.INPUT_DIR, None)
+  video: str = args.pop(ARGS.VIDEO, None)
+  output_dir: str = args.pop(ARGS.OUTPUT_DIR)
+  srt_only: bool = args.pop(ARGS.SRT_ONLY)
+  language: str = args.pop(ARGS.LANGUAGE)
+  language_to: str = args.pop(ARGS.LANGUAGE_TO)
 
-  gemini_model: str = args.pop("gemini_model")
-  verbose: bool = args["verbose"]
+  gemini_model: str = args.pop(ARGS.GEMINI_MODEL)
+  verbose: bool = args[ARGS.VERBOSE]
 
   # get all .mp4 files need to be processed
   to_processed_files = []
