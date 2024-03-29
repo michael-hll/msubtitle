@@ -60,6 +60,10 @@ def main():
                       help="The language code to translate the subtitle to using gemini_model")
 
   args = parser.parse_args().__dict__
+  process(**args)
+
+
+def process(**args):
   model_name: str = args.pop(ARGS.MODEL)
   input_dir: str = args.pop(ARGS.INPUT_DIR, None)
   video: str = args.pop(ARGS.VIDEO, None)
