@@ -2,7 +2,7 @@ import os
 import sys
 from typing import Iterator, TextIO
 import subprocess
-from enum import Enum
+from enum import StrEnum
 
 
 def str2bool(string):
@@ -100,7 +100,7 @@ def format_seconds(seconds):
   return time_string
 
 
-class C(Enum):
+class C(StrEnum):
   UUID = 'uuid'
   TEMP = 'temp'
   AAC = 'aac'
@@ -113,7 +113,7 @@ class C(Enum):
   OUT = 'out'
 
 
-class ARGS:
+class ARGS(StrEnum):
   VIDEO = 'video'
   INPUT_DIR = 'input_dir'
   MODEL = 'model'
