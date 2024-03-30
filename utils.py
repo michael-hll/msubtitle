@@ -2,7 +2,6 @@ import os
 import sys
 from typing import Iterator, TextIO
 import subprocess
-from enum import StrEnum
 
 
 def str2bool(string):
@@ -75,7 +74,7 @@ def run_ffmpeg_command(cmd, verbose=False):
     return True
 
 
-def sizeof_fmt(num, suffix="B"):
+def sizeof_fmt(num: int, suffix="B"):
   for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
     if abs(num) < 1024.0:
       return f"[size: {num:3.1f}{unit}{suffix}]"
@@ -83,7 +82,7 @@ def sizeof_fmt(num, suffix="B"):
   return f"[size of: {num:.1f}Y{suffix}]"
 
 
-def format_seconds(seconds):
+def format_seconds(seconds: int):
   minutes, seconds = divmod(seconds, 60)
   hours, minutes = divmod(minutes, 60)
   days, hours = divmod(hours, 24)
@@ -98,29 +97,3 @@ def format_seconds(seconds):
   time_string += "{:.2f} seconds".format(seconds)
 
   return time_string
-
-
-class C(StrEnum):
-  UUID = 'uuid'
-  TEMP = 'temp'
-  AAC = 'aac'
-  SRT = 'srt'
-  SRT_T = 'srt_t'
-  SIZE = 'size'
-  START = 'start'
-  END = 'end'
-  DURATION = 'duration'
-  OUT = 'out'
-
-
-class ARGS(StrEnum):
-  VIDEO = 'video'
-  INPUT_DIR = 'input_dir'
-  MODEL = 'model'
-  OUTPUT_DIR = 'output_dir'
-  SRT_ONLY = 'srt_only'
-  VERBOSE = 'verbose'
-  TASK = 'task'
-  LANGUAGE = 'language'
-  GEMINI_MODEL = 'gemini_model'
-  LANGUAGE_TO = 'language_to'

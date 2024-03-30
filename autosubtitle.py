@@ -4,15 +4,14 @@ import whisper
 import argparse
 import warnings
 import shutil
-from utils import ARGS, C, filename, str2bool, write_srt, run_ffmpeg_command, sizeof_fmt, format_seconds
+from utils import filename, str2bool, write_srt, run_ffmpeg_command, sizeof_fmt, format_seconds
+from constants import ARGS, C
 from csrt import translateSrt
 import uuid
 import glob
 from tqdm import tqdm
 import time
 from tabulate import tabulate
-
-temp_dir = os.path.join(os.getcwd(), "temp")
 
 
 def main():
@@ -101,9 +100,9 @@ def process(**args):
   if not output_dir:
     output_dir = os.path.join(os.getcwd(), 'out')
   os.makedirs(output_dir, exist_ok=True)
-  print(f'==> cleanning up files from temp folder: {temp_dir}')
-  shutil.rmtree(temp_dir, ignore_errors=True, onerror=None)
-  os.makedirs(temp_dir, exist_ok=True)
+  print(f'==> cleanning up files from temp folder: {C.TEMP_DIR}')
+  shutil.rmtree(C.TEMP_DIR, ignore_errors=True, onerror=None)
+  os.makedirs(C.TEMP_DIR, exist_ok=True)
 
   # Loading the whisper model
   if model_name.endswith(".en"):
@@ -121,7 +120,7 @@ def process(**args):
 
     # copy it to temp folder
     temp_file_id = str(uuid.uuid1())
-    temp_video_name = os.path.join(temp_dir, temp_file_id + '.mp4')
+    temp_video_name = os.path.join(C.TEMP_DIR, temp_file_id + '.mp4')
     processed_result[video] = {
         C.UUID: "",  # the uuid used to the following temp file names
         C.TEMP: "",  # temp video name
@@ -157,7 +156,7 @@ def process(**args):
       print(
           f"==> Translating subtitles for '{filename(video)}.mp4' {processed_result[video][C.SIZE]} This might take a while.")
       srt_t_temp_file_name = processed_result[video][C.UUID] + '_t.srt'
-      srt_t_path = os.path.join(temp_dir, srt_t_temp_file_name)
+      srt_t_path = os.path.join(C.TEMP_DIR, srt_t_temp_file_name)
       errors = []
       translateSrt(processed_result[video][C.SRT], language_to, srt_t_path,
                    gemini_model, verbose, errors)
@@ -168,7 +167,7 @@ def process(**args):
     # using ffmpeg command to achieve this
     if not srt_only:
       temp_video_out_name = processed_result[video][C.UUID] + '.out.mp4'
-      temp_video_out_path = os.path.join(temp_dir, temp_video_out_name)
+      temp_video_out_path = os.path.join(C.TEMP_DIR, temp_video_out_name)
       processed_result[video][C.OUT] = temp_video_out_path
       srt_t_path = processed_result[video][C.SRT_T]
 
@@ -233,7 +232,7 @@ def get_audio(video, processed_result, verbose):
   temp_audio_file_out = processed_result[video][C.UUID] + ".aac"
   print(
       f"==> Extracting audio from {filename(video)}.mp4 {processed_result[video][C.SIZE]}")
-  audio_output_path = os.path.join(temp_dir, temp_audio_file_out)
+  audio_output_path = os.path.join(C.TEMP_DIR, temp_audio_file_out)
 
   run_ffmpeg_command("ffmpeg -y -i " + temp_video_file +
                      " -vn -acodec copy " + audio_output_path, verbose)
@@ -245,7 +244,7 @@ def get_subtitles(video, processed_result, transcribe: callable):
 
   temp_aac_file = processed_result[video][C.AAC]
   srt_temp_file = processed_result[video][C.UUID] + '.srt'
-  srt_file_temp_path = os.path.join(temp_dir, srt_temp_file)
+  srt_file_temp_path = os.path.join(C.TEMP_DIR, srt_temp_file)
 
   print(
       f"==> Generating subtitles for '{filename(video)}.mp4' {processed_result[video][C.SIZE]} This might take a while.")
